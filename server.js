@@ -10,6 +10,13 @@ const JWT_SECRET = 'votre_secret_jwt'; // Changez ceci pour une chaîne secrète
 app.use(express.static(__dirname));
 app.use(bodyParser.json());
 
+const fs = require('fs');
+const dir = './db';
+
+if (!fs.existsSync(dir)){
+    fs.mkdirSync(dir);
+}
+
 // Initialisation de la base de données
 const db = new sqlite3.Database('./db/ludico.db', (err) => {
     if (err) {
@@ -41,15 +48,24 @@ db.run(`CREATE TABLE businesses (
 
 // Route d'inscription
 app.post('/api/signup', (req, res) => {
-    const { email, password } = req.body;
-    const sql = 'INSERT INTO users (email, password) VALUES (?, ?)';
-    db.run(sql, [email, password], function(err) {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
-        res.json({ "message": "success", "id": this.lastID });
-    });
+    console.log('Received signup request:', req.body);
+    try {
+        const { email, password } = req.body;
+        const sql = 'INSERT INTO users (email, password) VALUES (?, ?)';
+
+        db.run(sql, [email, password], function(err) {
+            if (err) {
+                console.error('Database INSERT error:', err.message);
+                res.status(400).json({ "error": err.message });
+                return;
+            }
+            console.log(`A row has been inserted with rowid ${this.lastID}`);
+            res.json({ "message": "success", "id": this.lastID });
+        });
+    } catch (e) {
+        console.error('Error in /api/signup route:', e.message);
+        res.status(500).json({ "error": "An internal server error occurred." });
+    }
 });
 
 // Route de connexion

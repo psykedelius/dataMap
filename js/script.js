@@ -1,5 +1,13 @@
 // Initialisation de la carte
-var map = L.map('map').setView([48.8566, 2.3522], 13);
+var map = L.map('map');
+
+// Centrer la carte sur la position de l'utilisateur
+navigator.geolocation.getCurrentPosition(function(position) {
+    map.setView([position.coords.latitude, position.coords.longitude], 13);
+}, function() {
+    // Si l'utilisateur refuse la géolocalisation, centrer sur Paris
+    map.setView([48.8566, 2.3522], 13);
+});
 
 // Ajout du fond de carte OpenStreetMap
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

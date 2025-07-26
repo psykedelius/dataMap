@@ -24,6 +24,7 @@
     <script>
         const form = document.querySelector('form');
         form.addEventListener('submit', (e) => {
+            console.log('Form submitted');
             e.preventDefault();
             const email = form.email.value;
             const password = form.password.value;
@@ -34,7 +35,7 @@
                 return;
             }
 
-            fetch('/api/signup', {
+            fetch('http://localhost:3000/api/signup', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

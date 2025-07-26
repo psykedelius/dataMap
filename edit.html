@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier la fiche - Espace Professionnel</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Modifier la fiche</h1>
+    </header>
+    <main>
+        <form id="edit-form">
+            <label for="name">Nom de l'entreprise:</label><br>
+            <input type="text" id="name" name="name"><br>
+            <label for="description">Description:</label><br>
+            <textarea id="description" name="description"></textarea><br>
+            <label for="category">Catégorie:</label><br>
+            <select id="category" name="category">
+                <option value="1">Escape Game</option>
+                <option value="2">Bar à jeux</option>
+                <option value="3">Laser Game</option>
+            </select><br>
+            <label for="lat">Latitude:</label><br>
+            <input type="text" id="lat" name="lat"><br>
+            <label for="lng">Longitude:</label><br>
+            <input type="text" id="lng" name="lng"><br><br>
+            <input type="submit" value="Enregistrer les modifications">
+        </form>
+    </main>
+    <footer>
+        <p>&copy; 2025 Ludico</p>
+    </footer>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const businessId = urlParams.get('id');
+        const form = document.getElementById('edit-form');
+
+        // Charger les données de la fiche
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch(`/api/businesses/${businessId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.data) {
+                        form.name.value = data.data.name;
+                        form.description.value = data.data.description;
+                        form.category.value = data.data.category_id;
+                        form.lat.value = data.data.lat;
+                        form.lng.value = data.data.lng;
+                    }
+                });
+        });
+
+        // Soumettre les modifications
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = form.name.value;
+            const description = form.description.value;
+            const category_id = form.category.value;
+            const lat = form.lat.value;
+            const lng = form.lng.value;
+
+            fetch(`/api/businesses/${businessId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ name, description, category_id, lat, lng })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert('Fiche modifiée avec succès !');
+                    window.location.href = 'dashboard.html';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

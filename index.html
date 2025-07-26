@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trouvez votre activité ludique</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Trouvez une activité ludique près de chez vous</h1>
+    </header>
+    <main>
+        <div class="filters">
+            <label><input type="checkbox" name="category" value="escape-game"> Escape Game</label>
+            <label><input type="checkbox" name="category" value="bar-jeux"> Bar à jeux</label>
+            <label><input type="checkbox" name="category" value="laser-game"> Laser Game</label>
+        </div>
+        <div id="map"></div>
+    </main>
+    <footer>
+        <a href="pro.html">Espace Professionnel</a>
+        <p>&copy; 2025 Ludico</p>
+    </footer>
+    <script src="js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+    "businesses": [
+        {
+            "name": "Escape Game de la Mort",
+            "category": "escape-game",
+            "lat": 48.86,
+            "lng": 2.35
+        },
+        {
+            "name": "Bar à jeux du Fun",
+            "category": "bar-jeux",
+            "lat": 48.85,
+            "lng": 2.36
+        },
+        {
+            "name": "Laser Game de l'Espace",
+            "category": "laser-game",
+            "lat": 48.855,
+            "lng": 2.34
+        }
+    ]
+}

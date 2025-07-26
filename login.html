@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Espace Professionnel</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Connexion - Espace Professionnel</h1>
+    </header>
+    <main>
+        <form>
+            <label for="email">Email:</label><br>
+            <input type="email" id="email" name="email"><br>
+            <label for="password">Mot de passe:</label><br>
+            <input type="password" id="password" name="password"><br><br>
+            <input type="submit" value="Se connecter">
+        </form>
+    </main>
+    <script>
+        const form = document.querySelector('form');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = form.email.value;
+            const password = form.password.value;
+
+            fetch('/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    localStorage.setItem('token', data.token);
+                    alert('Connexion réussie !');
+                    window.location.href = 'dashboard.html';
+                }
+            });
+        });
+    </script>
+    <footer>
+        <p>&copy; 2025 Ludico</p>
+    </footer>
+</body>
+</html>

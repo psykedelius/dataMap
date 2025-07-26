@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord - Espace Professionnel</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Tableau de bord - Espace Professionnel</h1>
+    </header>
+    <main>
+        <h2>Créer votre fiche d'entreprise</h2>
+        <form id="business-form">
+            <label for="name">Nom de l'entreprise:</label><br>
+            <input type="text" id="name" name="name"><br>
+            <label for="description">Description:</label><br>
+            <textarea id="description" name="description"></textarea><br>
+            <label for="category">Catégorie:</label><br>
+            <select id="category" name="category">
+                <option value="1">Escape Game</option>
+                <option value="2">Bar à jeux</option>
+                <option value="3">Laser Game</option>
+            </select><br>
+            <label for="lat">Latitude:</label><br>
+            <input type="text" id="lat" name="lat"><br>
+            <label for="lng">Longitude:</label><br>
+            <input type="text" id="lng" name="lng"><br><br>
+            <input type="submit" value="Créer la fiche">
+        </form>
+        <hr>
+        <p>Bienvenue sur votre tableau de bord.</p>
+        <a href="#" id="logout">Se déconnecter</a>
+    </main>
+    <footer>
+        <p>&copy; 2025 Ludico</p>
+    </footer>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        document.getElementById('logout').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        });
+
+        const businessForm = document.getElementById('business-form');
+        businessForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = businessForm.name.value;
+            const description = businessForm.description.value;
+            const category_id = businessForm.category.value;
+            const lat = businessForm.lat.value;
+            const lng = businessForm.lng.value;
+
+            fetch('/api/businesses', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ name, description, category_id, lat, lng })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert('Fiche créée avec succès !');
+                    businessForm.reset();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

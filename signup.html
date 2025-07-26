@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription - Espace Professionnel</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Inscription - Espace Professionnel</h1>
+    </header>
+    <main>
+        <form>
+            <label for="email">Email:</label><br>
+            <input type="email" id="email" name="email"><br>
+            <label for="password">Mot de passe:</label><br>
+            <input type="password" id="password" name="password"><br>
+            <label for="password-confirm">Confirmer le mot de passe:</label><br>
+            <input type="password" id="password-confirm" name="password-confirm"><br><br>
+            <input type="submit" value="S'inscrire">
+        </form>
+    </main>
+    <script>
+        const form = document.querySelector('form');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = form.email.value;
+            const password = form.password.value;
+            const passwordConfirm = form['password-confirm'].value;
+
+            if (password !== passwordConfirm) {
+                alert('Les mots de passe ne correspondent pas.');
+                return;
+            }
+
+            fetch('/api/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert('Inscription réussie !');
+                    window.location.href = 'login.html';
+                }
+            });
+        });
+    </script>
+    <footer>
+        <p>&copy; 2025 Ludico</p>
+    </footer>
+</body>
+</html>

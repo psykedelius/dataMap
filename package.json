@@ -1,0 +1,19 @@
+{
+  "name": "ludico",
+  "version": "1.0.0",
+  "description": "Trouvez des activités ludiques près de chez vous",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.9.13",
+    "sqlite3": "^5.1.7"
+  }
+}

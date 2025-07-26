@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Réservation</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Réservation</h1>
+    </header>
+    <main>
+        <h2 id="business-name"></h2>
+        <form>
+            <label for="date">Date:</label><br>
+            <input type="date" id="date" name="date"><br>
+            <label for="time">Heure:</label><br>
+            <input type="time" id="time" name="time"><br>
+            <label for="name">Votre nom:</label><br>
+            <input type="text" id="name" name="name"><br>
+            <label for="email">Votre email:</label><br>
+            <input type="email" id="email" name="email"><br><br>
+            <input type="submit" value="Réserver">
+        </form>
+    </main>
+    <footer>
+        <p>&copy; 2025 Ludico</p>
+    </footer>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const businessName = urlParams.get('business');
+        document.getElementById('business-name').textContent = businessName;
+
+        const form = document.querySelector('form');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const date = form.date.value;
+            const time = form.time.value;
+            const name = form.name.value;
+            const email = form.email.value;
+
+            fetch('/api/booking', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ businessName, date, time, name, email })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert('Réservation réussie ! Un e-mail de confirmation a été envoyé.');
+                    form.reset();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -33,8 +33,7 @@ db.run(`CREATE TABLE IF NOT EXISTS users (
 )`);
 
 // Création de la table des entreprises
-db.run('DROP TABLE IF EXISTS businesses');
-db.run(`CREATE TABLE businesses (
+db.run(`CREATE TABLE IF NOT EXISTS businesses (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     description TEXT,
@@ -177,6 +176,26 @@ app.get('/api/businesses', (req, res) => {
             "data":rows
         })
       });
+});
+
+const fetch = require('node-fetch');
+
+app.get('/api/location', async (req, res) => {
+    try {
+        // Pour les tests en local, l'IP sera ::1 (localhost).
+        // En production, req.ip donnera l'IP du client.
+        // On peut forcer une IP pour tester, ex: '8.8.8.8'
+        const ip = req.ip === '::1' ? '8.8.8.8' : req.ip;
+        const response = await fetch(`http://ip-api.com/json/${ip}`);
+        const data = await response.json();
+        if (data.status === 'success') {
+            res.json({ lat: data.lat, lon: data.lon });
+        } else {
+            res.status(404).json({ error: 'Location not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch location' });
+    }
 });
 
 app.listen(port, () => {

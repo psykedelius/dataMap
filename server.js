@@ -7,7 +7,6 @@ const app = express();
 const port = 3000;
 const JWT_SECRET = 'votre_secret_jwt'; // Changez ceci pour une chaîne secrète plus complexe
 
-app.use(express.static(__dirname));
 app.use(bodyParser.json());
 
 const fs = require('fs');
@@ -258,6 +257,8 @@ app.get('/api/location', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch location' });
     }
 });
+
+app.use(express.static(__dirname));
 
 app.listen(port, () => {
     console.log(`Server listening on port ${port}`);

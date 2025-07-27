@@ -7,7 +7,6 @@ const app = express();
 const port = 3000;
 const JWT_SECRET = 'votre_secret_jwt'; // Changez ceci pour une chaîne secrète plus complexe
 
-app.use(express.static(__dirname));
 app.use(bodyParser.json());
 
 const fs = require('fs');
@@ -33,8 +32,7 @@ db.run(`CREATE TABLE IF NOT EXISTS users (
 )`);
 
 // Création de la table des entreprises
-db.run('DROP TABLE IF EXISTS businesses');
-db.run(`CREATE TABLE businesses (
+db.run(`CREATE TABLE IF NOT EXISTS businesses (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     description TEXT,
@@ -101,6 +99,67 @@ const authenticateJWT = (req, res, next) => {
         res.sendStatus(401);
     }
 };
+
+// Route pour récupérer les entreprises d'un utilisateur
+app.get('/api/user/businesses', authenticateJWT, (req, res) => {
+    const sql = "SELECT * FROM businesses WHERE user_id = ?";
+    db.all(sql, [req.user.id], (err, rows) => {
+        if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+        }
+        res.json({
+            "message":"success",
+            "data":rows
+        })
+      });
+});
+
+// Route pour récupérer une entreprise par son ID
+app.get('/api/businesses/:id', (req, res) => {
+    const sql = "SELECT * FROM businesses WHERE id = ?";
+    db.get(sql, [req.params.id], (err, row) => {
+        if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+        }
+        res.json({
+            "message":"success",
+            "data":row
+        })
+      });
+});
+
+// Route pour modifier une entreprise
+app.put('/api/businesses/:id', authenticateJWT, (req, res) => {
+    const { name, description, category_id, lat, lng } = req.body;
+    const sql = `UPDATE businesses set
+                 name = COALESCE(?,name),
+                 description = COALESCE(?,description),
+                 category_id = COALESCE(?,category_id),
+                 lat = COALESCE(?,lat),
+                 lng = COALESCE(?,lng)
+                 WHERE id = ? AND user_id = ?`;
+    db.run(sql, [name, description, category_id, lat, lng, req.params.id, req.user.id], function(err) {
+        if (err) {
+            res.status(400).json({ "error": res.message })
+            return;
+        }
+        res.json({ message: "success" })
+    });
+});
+
+// Route pour supprimer une entreprise
+app.delete('/api/businesses/:id', authenticateJWT, (req, res) => {
+    const sql = 'DELETE FROM businesses WHERE id = ? AND user_id = ?';
+    db.run(sql, [req.params.id, req.user.id], function(err) {
+        if (err) {
+            res.status(400).json({ "error": res.message })
+            return;
+        }
+        res.json({ message: "deleted", changes: this.changes })
+    });
+});
 
 // Route pour créer une entreprise
 app.post('/api/businesses', authenticateJWT, (req, res) => {
@@ -178,6 +237,36 @@ app.get('/api/businesses', (req, res) => {
         })
       });
 });
+
+const http = require('http');
+
+app.get('/api/location', (req, res) => {
+    const ip = req.ip === '::1' ? '8.8.8.8' : req.ip;
+    const url = `http://ip-api.com/json/${ip}`;
+
+    http.get(url, (apiRes) => {
+        let data = '';
+        apiRes.on('data', (chunk) => {
+            data += chunk;
+        });
+        apiRes.on('end', () => {
+            try {
+                const jsonData = JSON.parse(data);
+                if (jsonData.status === 'success') {
+                    res.json({ lat: jsonData.lat, lon: jsonData.lon });
+                } else {
+                    res.status(404).json({ error: 'Location not found' });
+                }
+            } catch (e) {
+                res.status(500).json({ error: 'Failed to parse location data' });
+            }
+        });
+    }).on('error', (err) => {
+        res.status(500).json({ error: 'Failed to fetch location' });
+    });
+});
+
+app.use(express.static(__dirname));
 
 app.listen(port, () => {
     console.log(`Server listening on port ${port}`);

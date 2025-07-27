@@ -30,6 +30,9 @@
             <input type="submit" value="Créer la fiche">
         </form>
         <hr>
+        <h2>Mes fiches</h2>
+        <div id="business-list"></div>
+        <hr>
         <p>Bienvenue sur votre tableau de bord.</p>
         <a href="#" id="logout">Se déconnecter</a>
     </main>
@@ -41,6 +44,56 @@
         if (!token) {
             window.location.href = 'login.html';
         }
+
+        function fetchUserBusinesses() {
+            fetch('/api/user/businesses', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                const list = document.getElementById('business-list');
+                list.innerHTML = '';
+                data.data.forEach(business => {
+                    const item = document.createElement('div');
+                    item.innerHTML = `
+                        <p>
+                            <strong>${business.name}</strong><br>
+                            <a href="edit.html?id=${business.id}">Modifier</a> |
+                            <a href="#" class="delete-link" data-id="${business.id}">Supprimer</a>
+                        </p>
+                    `;
+                    list.appendChild(item);
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchUserBusinesses);
+
+        document.getElementById('business-list').addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-link')) {
+                e.preventDefault();
+                const id = e.target.getAttribute('data-id');
+                if (confirm('Êtes-vous sûr de vouloir supprimer cette fiche ?')) {
+                    fetch(`/api/businesses/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                        } else {
+                            alert('Fiche supprimée avec succès !');
+                            fetchUserBusinesses();
+                        }
+                    });
+                }
+            }
+        });
 
         document.getElementById('logout').addEventListener('click', () => {
             localStorage.removeItem('token');

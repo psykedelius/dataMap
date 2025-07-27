@@ -41,16 +41,15 @@ function updateMarkers() {
         }
     });
 }
-
+ 
 let businesses = [];
 
-fetch('data.json')
+fetch('/api/businesses')
     .then(response => response.json())
     .then(data => {
-        businesses = data.businesses;
+        businesses = data.data;
         updateMarkers();
     });
-
 
 // Mettre à jour les marqueurs lorsque les filtres changent
 document.querySelectorAll('input[name="category"]').forEach(input => {

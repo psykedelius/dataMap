@@ -319,5 +319,5 @@ app.get('/api/location', (req, res) => {
 app.use(express.static(__dirname));
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Server listening on port ${port}`);
+    console.log(`Server listening on port ${PORT}`);
 });

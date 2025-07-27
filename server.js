@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const sqlite3 = require('sqlite3').verbose();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+
 const JWT_SECRET = 'votre_secret_jwt'; // Changez ceci pour une chaîne secrète plus complexe
 
 app.use(bodyParser.json());
@@ -317,7 +317,7 @@ app.get('/api/location', (req, res) => {
 });
 
 app.use(express.static(__dirname));
-
-app.listen(port, () => {
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
     console.log(`Server listening on port ${port}`);
 });

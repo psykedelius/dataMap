@@ -238,24 +238,32 @@ app.get('/api/businesses', (req, res) => {
       });
 });
 
-const fetch = require('node-fetch');
+const http = require('http');
 
-app.get('/api/location', async (req, res) => {
-    try {
-        // Pour les tests en local, l'IP sera ::1 (localhost).
-        // En production, req.ip donnera l'IP du client.
-        // On peut forcer une IP pour tester, ex: '8.8.8.8'
-        const ip = req.ip === '::1' ? '8.8.8.8' : req.ip;
-        const response = await fetch(`http://ip-api.com/json/${ip}`);
-        const data = await response.json();
-        if (data.status === 'success') {
-            res.json({ lat: data.lat, lon: data.lon });
-        } else {
-            res.status(404).json({ error: 'Location not found' });
-        }
-    } catch (error) {
+app.get('/api/location', (req, res) => {
+    const ip = req.ip === '::1' ? '8.8.8.8' : req.ip;
+    const url = `http://ip-api.com/json/${ip}`;
+
+    http.get(url, (apiRes) => {
+        let data = '';
+        apiRes.on('data', (chunk) => {
+            data += chunk;
+        });
+        apiRes.on('end', () => {
+            try {
+                const jsonData = JSON.parse(data);
+                if (jsonData.status === 'success') {
+                    res.json({ lat: jsonData.lat, lon: jsonData.lon });
+                } else {
+                    res.status(404).json({ error: 'Location not found' });
+                }
+            } catch (e) {
+                res.status(500).json({ error: 'Failed to parse location data' });
+            }
+        });
+    }).on('error', (err) => {
         res.status(500).json({ error: 'Failed to fetch location' });
-    }
+    });
 });
 
 app.use(express.static(__dirname));

@@ -10,24 +10,43 @@
     <header>
         <h1>Modifier la fiche</h1>
     </header>
+    <style>
+        .form-container {
+            display: flex;
+            gap: 2rem;
+        }
+        .form-fields {
+            flex: 1;
+        }
+        #coord-map {
+            flex: 1;
+            height: 400px;
+            border-radius: 8px;
+        }
+    </style>
     <main>
-        <form id="edit-form">
-            <label for="name">Nom de l'entreprise:</label><br>
-            <input type="text" id="name" name="name"><br>
-            <label for="description">Description:</label><br>
-            <textarea id="description" name="description"></textarea><br>
-            <label for="category">Catégorie:</label><br>
-            <select id="category" name="category">
-                <option value="1">Escape Game</option>
-                <option value="2">Bar à jeux</option>
-                <option value="3">Laser Game</option>
-            </select><br>
-            <label for="lat">Latitude:</label><br>
-            <input type="text" id="lat" name="lat"><br>
-            <label for="lng">Longitude:</label><br>
-            <input type="text" id="lng" name="lng"><br><br>
-            <input type="submit" value="Enregistrer les modifications">
-        </form>
+        <div class="form-container">
+            <div class="form-fields">
+                <form id="edit-form">
+                    <label for="name">Nom de l'entreprise:</label><br>
+                    <input type="text" id="name" name="name" required><br>
+                    <label for="description">Description:</label><br>
+                    <textarea id="description" name="description"></textarea><br>
+                    <label for="category">Catégorie:</label><br>
+                    <select id="category" name="category">
+                        <option value="1">Escape Game</option>
+                        <option value="2">Bar à jeux</option>
+                        <option value="3">Laser Game</option>
+                    </select><br>
+                    <label for="lat">Latitude:</label><br>
+                    <input type="text" id="lat" name="lat" required><br>
+                    <label for="lng">Longitude:</label><br>
+                    <input type="text" id="lng" name="lng" required><br><br>
+                    <input type="submit" value="Enregistrer les modifications">
+                </form>
+            </div>
+            <div id="coord-map"></div>
+        </div>
     </main>
     <footer>
         <p>&copy; 2025 Ludico</p>
@@ -42,6 +61,11 @@
         const urlParams = new URLSearchParams(window.location.search);
         const businessId = urlParams.get('id');
         const form = document.getElementById('edit-form');
+        const latInput = document.getElementById('lat');
+        const lngInput = document.getElementById('lng');
+
+        let map;
+        let marker;
 
         // Charger les données de la fiche
         document.addEventListener('DOMContentLoaded', () => {
@@ -49,11 +73,27 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.data) {
-                        form.name.value = data.data.name;
-                        form.description.value = data.data.description;
-                        form.category.value = data.data.category_id;
-                        form.lat.value = data.data.lat;
-                        form.lng.value = data.data.lng;
+                        const business = data.data;
+                        form.name.value = business.name;
+                        form.description.value = business.description;
+                        form.category.value = business.category_id;
+                        latInput.value = business.lat;
+                        lngInput.value = business.lng;
+
+                        // Initialiser la carte
+                        map = L.map('coord-map').setView([business.lat, business.lng], 13);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                        marker = L.marker([business.lat, business.lng]).addTo(map);
+
+                        map.on('click', function(e) {
+                            const { lat, lng } = e.latlng;
+                            latInput.value = lat;
+                            lngInput.value = lng;
+                            if (marker) {
+                                map.removeLayer(marker);
+                            }
+                            marker = L.marker([lat, lng]).addTo(map);
+                        });
                     }
                 });
         });

@@ -125,21 +125,6 @@ app.get('/api/user/businesses', authenticateJWT, (req, res) => {
       });
 });
 
-// Route pour récupérer une entreprise par son ID
-app.get('/api/businesses/:id', (req, res) => {
-    const sql = "SELECT * FROM businesses WHERE id = ?";
-    db.get(sql, [req.params.id], (err, row) => {
-        if (err) {
-          res.status(400).json({"error":err.message});
-          return;
-        }
-        res.json({
-            "message":"success",
-            "data":row
-        })
-      });
-});
-
 // Route pour modifier une entreprise
 app.put('/api/businesses/:id', authenticateJWT, (req, res) => {
     const { name, description, category_id, lat, lng } = req.body;
@@ -197,6 +182,21 @@ app.delete('/api/slots/:id', authenticateJWT, (req, res) => {
         }
         res.json({ message: "deleted", changes: this.changes })
     });
+});
+
+// Route pour récupérer une entreprise par son ID (placée après les routes plus spécifiques)
+app.get('/api/businesses/:id', (req, res) => {
+    const sql = "SELECT * FROM businesses WHERE id = ?";
+    db.get(sql, [req.params.id], (err, row) => {
+        if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+        }
+        res.json({
+            "message":"success",
+            "data":row
+        })
+      });
 });
 
 // Route pour supprimer une entreprise

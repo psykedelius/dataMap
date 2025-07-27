@@ -1,35 +1,22 @@
 {
     "businesses": [
         {
-            "name": "Get Out !",
+            "name": "Escape Game de la Mort",
             "category": "escape-game",
-            "lat": 48.11035019777215,
-            "lng":-1.681776178482119
+            "lat": 48.86,
+            "lng": 2.35
         },
         {
-            "name": "Terres de Jeux",
-            "category": "magasins",
-            "lat": 48.10866544838288,
-            "lng":  -1.6762521101030736
-        },
-        
-        {
-            "name": "L'Heure du Jeu",
+            "name": "Bar à jeux du Fun",
             "category": "bar-jeux",
-            "lat": 48.10639774754664,
-            "lng": -1.6740497734880877
+            "lat": 48.85,
+            "lng": 2.36
         },
         {
-            "name": "Space Laser",
+            "name": "Laser Game de l'Espace",
             "category": "laser-game",
-            "lat": 48.10583352225117, 
-            "lng": -1.7059356538759065
-        },
-        {
-            "name": "LEVEL3",
-            "category": "laser-game",
-            "lat": 48.065476093133356,
-            "lng":  -1.6254210813356071
+            "lat": 48.855,
+            "lng": 2.34
         }
     ]
 }

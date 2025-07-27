@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de bord - Espace Professionnel</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -26,35 +32,111 @@
     </style>
     <main>
         <h2>Créer votre fiche d'entreprise</h2>
-        <form id="business-form">
-            <label for="name">Nom de l'entreprise:</label><br>
-            <input type="text" id="name" name="name"><br>
-            <label for="description">Description:</label><br>
-            <textarea id="description" name="description"></textarea><br>
-            <label for="category">Catégorie:</label><br>
-            <select id="category" name="category">
-                <option value="1">Escape Game</option>
-                <option value="2">Bar à jeux</option>
-                <option value="3">Laser Game</option>
-            </select><br>
-            <label for="lat">Latitude:</label><br>
-            <input type="text" id="lat" name="lat"><br>
-            <label for="lng">Longitude:</label><br>
-            <input type="text" id="lng" name="lng"><br><br>
-            <input type="submit" value="Créer la fiche">
-        </form>
+        <div class="form-container">
+            <div class="form-fields">
+                <form id="business-form">
+                    <label for="name">Nom de l'entreprise:</label><br>
+                    <input type="text" id="name" name="name" required><br>
+                    <label for="description">Description:</label><br>
+                    <textarea id="description" name="description"></textarea><br>
+                    <label for="category">Catégorie:</label><br>
+                    <select id="category" name="category">
+                        <option value="1">Escape Game</option>
+                        <option value="2">Bar à jeux</option>
+                        <option value="3">Laser Game</option>
+                    </select><br>
+                    <label for="lat">Latitude:</label><br>
+                    <input type="text" id="lat" name="lat" required><br>
+                    <label for="lng">Longitude:</label><br>
+                    <input type="text" id="lng" name="lng" required><br><br>
+                    <input type="submit" value="Créer la fiche">
+                </form>
+            </div>
+            <div id="coord-map"></div>
+        </div>
+        <hr>
+        <h2>Mes fiches</h2>
+        <div id="business-list"></div>
         <hr>
         <p>Bienvenue sur votre tableau de bord.</p>
         <a href="#" id="logout">Se déconnecter</a>
     </main>
-    <footer>
-        <p>&copy; 2025 Ludico</p>
-    </footer>
     <script>
         const token = localStorage.getItem('token');
         if (!token) {
             window.location.href = 'login.html';
         }
+
+        function fetchUserBusinesses() {
+            fetch('/api/user/businesses', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                const list = document.getElementById('business-list');
+                list.innerHTML = '';
+                data.data.forEach(business => {
+                    const item = document.createElement('div');
+                    item.innerHTML = `
+                        <p>
+                            <strong>${business.name}</strong><br>
+                            <a href="edit.html?id=${business.id}">Modifier</a> |
+                            <a href="#" class="delete-link" data-id="${business.id}">Supprimer</a>
+                        </p>
+                    `;
+                    list.appendChild(item);
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchUserBusinesses();
+
+            const latInput = document.getElementById('lat');
+            const lngInput = document.getElementById('lng');
+
+            const map = L.map('coord-map').setView([48.8566, 2.3522], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+            let marker;
+
+            map.on('click', function(e) {
+                const { lat, lng } = e.latlng;
+                latInput.value = lat;
+                lngInput.value = lng;
+
+                if (marker) {
+                    map.removeLayer(marker);
+                }
+                marker = L.marker([lat, lng]).addTo(map);
+            });
+        });
+
+        document.getElementById('business-list').addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-link')) {
+                e.preventDefault();
+                const id = e.target.getAttribute('data-id');
+                if (confirm('Êtes-vous sûr de vouloir supprimer cette fiche ?')) {
+                    fetch(`/api/businesses/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                        } else {
+                            alert('Fiche supprimée avec succès !');
+                            fetchUserBusinesses();
+                        }
+                    });
+                }
+            }
+        });
 
         document.getElementById('logout').addEventListener('click', () => {
             localStorage.removeItem('token');
@@ -85,6 +167,7 @@
                 } else {
                     alert('Fiche créée avec succès !');
                     businessForm.reset();
+                    fetchUserBusinesses();
                 }
             });
         });

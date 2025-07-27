@@ -44,6 +44,16 @@ db.run(`CREATE TABLE IF NOT EXISTS businesses (
     FOREIGN KEY (user_id) REFERENCES users (id)
 )`);
 
+// Création de la table des créneaux horaires
+db.run(`CREATE TABLE IF NOT EXISTS time_slots (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    business_id INTEGER NOT NULL,
+    day_of_week INTEGER NOT NULL,
+    start_time TEXT NOT NULL,
+    max_clients INTEGER NOT NULL,
+    FOREIGN KEY (business_id) REFERENCES businesses (id) ON DELETE CASCADE
+)`);
+
 // Route d'inscription
 app.post('/api/signup', (req, res) => {
     console.log('Received signup request:', req.body);
@@ -146,6 +156,46 @@ app.put('/api/businesses/:id', authenticateJWT, (req, res) => {
             return;
         }
         res.json({ message: "success" })
+    });
+});
+
+// Route pour lister les créneaux d'une entreprise
+app.get('/api/businesses/:id/slots', authenticateJWT, (req, res) => {
+    const sql = "SELECT * FROM time_slots WHERE business_id = ?";
+    db.all(sql, [req.params.id], (err, rows) => {
+        if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+        }
+        res.json({
+            "message":"success",
+            "data":rows
+        })
+      });
+});
+
+// Route pour ajouter un créneau
+app.post('/api/businesses/:id/slots', authenticateJWT, (req, res) => {
+    const { day_of_week, start_time, max_clients } = req.body;
+    const sql = 'INSERT INTO time_slots (business_id, day_of_week, start_time, max_clients) VALUES (?, ?, ?, ?)';
+    db.run(sql, [req.params.id, day_of_week, start_time, max_clients], function(err) {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({ "message": "success", "id": this.lastID });
+    });
+});
+
+// Route pour supprimer un créneau
+app.delete('/api/slots/:id', authenticateJWT, (req, res) => {
+    const sql = 'DELETE FROM time_slots WHERE id = ?';
+    db.run(sql, [req.params.id], function(err) {
+        if (err) {
+            res.status(400).json({ "error": res.message })
+            return;
+        }
+        res.json({ message: "deleted", changes: this.changes })
     });
 });
 

@@ -44,14 +44,39 @@
                         <option value="2">Bar à jeux</option>
                         <option value="3">Laser Game</option>
                     </select><br>
-                    <label for="lat">Latitude:</label><br>
-                    <input type="text" id="lat" name="lat" required><br>
-                    <label for="lng">Longitude:</label><br>
-                    <input type="text" id="lng" name="lng" required><br><br>
+                    <input type="hidden" id="lat" name="lat" required>
+                    <input type="hidden" id="lng" name="lng" required>
+                    <p>Cliquez sur la carte pour définir l'emplacement.</p>
+                    <br>
                     <input type="submit" value="Enregistrer les modifications">
                 </form>
             </div>
             <div id="coord-map"></div>
+        </div>
+        <hr>
+        <h2>Gérer les créneaux horaires</h2>
+        <div id="slots-container">
+            <form id="slot-form">
+                <h3>Ajouter un créneau</h3>
+                <label for="day_of_week">Jour :</label>
+                <select id="day_of_week" name="day_of_week">
+                    <option value="1">Lundi</option>
+                    <option value="2">Mardi</option>
+                    <option value="3">Mercredi</option>
+                    <option value="4">Jeudi</option>
+                    <option value="5">Vendredi</option>
+                    <option value="6">Samedi</option>
+                    <option value="0">Dimanche</option>
+                </select>
+                <label for="start_time">Heure de début :</label>
+                <input type="time" id="start_time" name="start_time" required>
+                <label for="max_clients">Clients max :</label>
+                <input type="number" id="max_clients" name="max_clients" required>
+                <input type="submit" value="Ajouter le créneau">
+            </form>
+            <div id="slots-list">
+                <h3>Créneaux actuels</h3>
+            </div>
         </div>
     </main>
     <footer>
@@ -103,6 +128,77 @@
                     }
                 });
         });
+
+        const slotForm = document.getElementById('slot-form');
+        const slotsList = document.getElementById('slots-list');
+        const days = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+
+        function fetchSlots() {
+            fetch(`/api/businesses/${businessId}/slots`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.json())
+            .then(data => {
+                slotsList.innerHTML = '<h3>Créneaux actuels</h3>'; // Reset list
+                data.data.sort((a,b) => a.day_of_week - b.day_of_week || a.start_time.localeCompare(b.start_time)).forEach(slot => {
+                    const item = document.createElement('p');
+                    item.innerHTML = `
+                        ${days[slot.day_of_week]} à ${slot.start_time} (${slot.max_clients} places)
+                        <a href="#" class="delete-slot" data-id="${slot.id}">[supprimer]</a>
+                    `;
+                    slotsList.appendChild(item);
+                });
+            });
+        }
+
+        slotForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const day_of_week = slotForm.day_of_week.value;
+            const start_time = slotForm.start_time.value;
+            const max_clients = slotForm.max_clients.value;
+
+            fetch(`/api/businesses/${businessId}/slots`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ day_of_week, start_time, max_clients })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    slotForm.reset();
+                    fetchSlots();
+                }
+            });
+        });
+
+        slotsList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-slot')) {
+                e.preventDefault();
+                const slotId = e.target.getAttribute('data-id');
+                if (confirm('Êtes-vous sûr de vouloir supprimer ce créneau ?')) {
+                    fetch(`/api/slots/${slotId}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                        } else {
+                            fetchSlots();
+                        }
+                    });
+                }
+            }
+        });
+
+        // Charger les créneaux au chargement de la page
+        document.addEventListener('DOMContentLoaded', fetchSlots);
 
         // Soumettre les modifications
         form.addEventListener('submit', (e) => {

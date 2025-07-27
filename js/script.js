@@ -41,7 +41,7 @@ function updateMarkers() {
         }
     });
 }
- 
+
 let businesses = [];
 
 fetch('/api/businesses')
@@ -50,6 +50,7 @@ fetch('/api/businesses')
         businesses = data.data;
         updateMarkers();
     });
+
 
 // Mettre à jour les marqueurs lorsque les filtres changent
 document.querySelectorAll('input[name="category"]').forEach(input => {

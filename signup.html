@@ -11,6 +11,7 @@
         <h1>Inscription - Espace Professionnel</h1>
     </header>
     <main>
+        <p><a href="index.html">Accueil</a> > <a href="pro.html">Espace Professionnel</a> > Inscription</p>
         <form>
             <label for="email">Email:</label><br>
             <input type="email" id="email" name="email"><br>
@@ -35,11 +36,7 @@
                 return;
             }
 
-            const API_BASE_URL = window.location.hostname === "localhost"
-            ? "http://localhost:3000/api/signup"
-            : "https://www.guillaumehardouin.com/portfolio/webProjects/ludico/api/signup";
-
-            fetch(API_BASE_URL, {
+            fetch('http://localhost:3000/api/signup', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

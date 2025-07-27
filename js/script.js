@@ -25,19 +25,25 @@ function updateMarkers() {
         });
     }
 
+    const categoryMap = {
+        'escape-game': 1,
+        'bar-jeux': 2,
+        'laser-game': 3
+    };
+
     // Obtenir les catégories sélectionnées
     const selectedCategories = Array.from(document.querySelectorAll('input[name="category"]:checked'))
-        .map(input => input.value);
+        .map(input => categoryMap[input.value]);
 
     // Afficher les marqueurs pour les catégories sélectionnées
     businesses.forEach(business => {
-        if (selectedCategories.length === 0 || selectedCategories.includes(business.category)) {
-            if (!markers[business.category]) {
-                markers[business.category] = [];
+        if (selectedCategories.length === 0 || selectedCategories.includes(business.category_id)) {
+            if (!markers[business.category_id]) {
+                markers[business.category_id] = [];
             }
             const marker = L.marker([business.lat, business.lng]).addTo(map)
                 .bindPopup(`${business.name}<br><a href="booking.html?business=${business.name}">Réserver</a>`);
-            markers[business.category].push(marker);
+            markers[business.category_id].push(marker);
         }
     });
 }

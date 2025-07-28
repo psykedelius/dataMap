@@ -15,10 +15,6 @@
 <body>
     <header>
         <h1>Tableau de bord - Espace Professionnel</h1>
-        <div class="user-actions">
-            <a href="login.html">Se connecter</a>
-            <a href="signup.html">S'inscrire</a>
-        </div>
     </header>
     <style>
         .form-container {
@@ -54,7 +50,7 @@
                     <input type="hidden" id="lng" name="lng" required>
                     <p>Cliquez sur la carte pour définir l'emplacement.</p>
                     <br>
-                    <input type="submit" value="Créer la fiche" id="submit-button" disabled>
+                    <input type="submit" value="Créer la fiche">
                 </form>
             </div>
             <div id="coord-map"></div>
@@ -104,18 +100,15 @@
             const map = L.map('coord-map');
             let marker;
 
-            // Centrer la carte sur la position de l'utilisateur
-            if ('geolocation' in navigator) {
-                navigator.geolocation.getCurrentPosition(position => {
-                    map.setView([position.coords.latitude, position.coords.longitude], 13);
-                }, () => {
-                    // Fallback sur Paris si l'utilisateur refuse la géolocalisation
-                    map.setView([48.8566, 2.3522], 13);
+            // Centrer la carte sur la position IP
+            fetch('/api/location')
+                .then(res => res.json())
+                .then(data => {
+                    map.setView([data.lat, data.lon], 13);
+                })
+                .catch(() => {
+                    map.setView([48.8566, 2.3522], 13); // Fallback sur Paris
                 });
-            } else {
-                // Fallback sur Paris si le navigateur ne supporte pas la géolocalisation
-                map.setView([48.8566, 2.3522], 13);
-            }
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
@@ -161,22 +154,6 @@
         });
 
         const businessForm = document.getElementById('business-form');
-        const submitButton = document.getElementById('submit-button');
-        const nameInput = document.getElementById('name');
-        const latInput = document.getElementById('lat');
-
-        function checkForm() {
-            const name = nameInput.value;
-            const lat = latInput.value;
-            if (name && lat) {
-                submitButton.disabled = false;
-            } else {
-                submitButton.disabled = true;
-            }
-        }
-
-        businessForm.addEventListener('input', checkForm);
-
         businessForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const name = businessForm.name.value;

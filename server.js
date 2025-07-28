@@ -28,11 +28,7 @@ const db = new sqlite3.Database('./db/ludico.db', (err) => {
 db.run(`CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL,
-    name TEXT,
-    username TEXT,
-    phone TEXT,
-    role TEXT
+    password TEXT NOT NULL
 )`);
 
 // Création de la table des entreprises
@@ -58,30 +54,17 @@ db.run(`CREATE TABLE IF NOT EXISTS time_slots (
     FOREIGN KEY (business_id) REFERENCES businesses (id) ON DELETE CASCADE
 )`);
 
-// Création de la table des réservations
-db.run(`CREATE TABLE IF NOT EXISTS reservations (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    time_slot_id INTEGER NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users (id),
-    FOREIGN KEY (time_slot_id) REFERENCES time_slots (id)
-)`);
-
 // Route d'inscription
 app.post('/api/signup', (req, res) => {
     console.log('Received signup request:', req.body);
     try {
-        const { name, username, phone, email, password, role } = req.body;
-        const sql = 'INSERT INTO users (name, username, phone, email, password, role) VALUES (?, ?, ?, ?, ?, ?)';
+        const { email, password } = req.body;
+        const sql = 'INSERT INTO users (email, password) VALUES (?, ?)';
 
-        db.run(sql, [name, username, phone, email, password, role], function(err) {
+        db.run(sql, [email, password], function(err) {
             if (err) {
-                if (err.message.includes('UNIQUE constraint failed')) {
-                    res.status(400).json({ "error": "Cette adresse e-mail est déjà utilisée." });
-                } else {
-                    console.error('Database INSERT error:', err.message);
-                    res.status(400).json({ "error": err.message });
-                }
+                console.error('Database INSERT error:', err.message);
+                res.status(400).json({ "error": err.message });
                 return;
             }
             console.log(`A row has been inserted with rowid ${this.lastID}`);
@@ -99,11 +82,11 @@ app.post('/api/login', (req, res) => {
     const sql = 'SELECT * FROM users WHERE email = ? AND password = ?';
     db.get(sql, [email, password], (err, row) => {
         if (err || !row) {
-            res.status(400).json({ "error": "Email ou mot de passe incorrect." });
+            res.status(400).json({ "error": "Invalid credentials" });
             return;
         }
-        const token = jwt.sign({ id: row.id, role: row.role }, JWT_SECRET, { expiresIn: '1h' });
-        res.json({ "message": "success", "token": token, "role": row.role });
+        const token = jwt.sign({ id: row.id }, JWT_SECRET, { expiresIn: '1h' });
+        res.json({ "message": "success", "token": token });
     });
 });
 
@@ -198,27 +181,6 @@ app.delete('/api/slots/:id', authenticateJWT, (req, res) => {
             return;
         }
         res.json({ message: "deleted", changes: this.changes })
-    });
-});
-
-// Route pour récupérer les réservations d'un utilisateur
-app.get('/api/user/reservations', authenticateJWT, (req, res) => {
-    const sql = `
-        SELECT b.name as business_name, ts.day_of_week, ts.start_time
-        FROM reservations r
-        JOIN time_slots ts ON r.time_slot_id = ts.id
-        JOIN businesses b ON ts.business_id = b.id
-        WHERE r.user_id = ?
-    `;
-    db.all(sql, [req.user.id], (err, rows) => {
-        if (err) {
-            res.status(400).json({"error":err.message});
-            return;
-        }
-        res.json({
-            "message":"success",
-            "data":rows
-        })
     });
 });
 
@@ -328,6 +290,36 @@ app.get('/api/businesses', (req, res) => {
 
 const https = require('https');
 
+app.get('/api/location', (req, res) => {
+    // Correct IP address detection for Heroku and local
+    const ip = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || '').split(',')[0].trim() || '8.8.8.8';
+    console.log(`[Location API] Detected IP: ${ip}`);
+    const url = `https://ip-api.com/json/${ip}`;
+
+    https.get(url, (apiRes) => {
+        let data = '';
+        apiRes.on('data', (chunk) => {
+            data += chunk;
+        });
+        apiRes.on('end', () => {
+            try {
+                const jsonData = JSON.parse(data);
+                console.log('[Location API] Response from ip-api.com:', jsonData);
+                if (jsonData.status === 'success') {
+                    res.json({ lat: jsonData.lat, lon: jsonData.lon });
+                } else {
+                    res.status(404).json({ error: 'Location not found' });
+                }
+            } catch (e) {
+                console.error('[Location API] Error parsing JSON:', e);
+                res.status(500).json({ error: 'Failed to parse location data' });
+            }
+        });
+    }).on('error', (err) => {
+        console.error('[Location API] Error fetching location:', err);
+        res.status(500).json({ error: 'Failed to fetch location' });
+    });
+});
 
 app.use(express.static(__dirname));
 

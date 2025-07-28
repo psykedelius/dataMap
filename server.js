@@ -290,37 +290,6 @@ app.get('/api/businesses', (req, res) => {
 
 const https = require('https');
 
-app.get('/api/location', (req, res) => {
-    // Correct IP address detection for Heroku and local
-    const ip = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || '').split(',')[0].trim() || '8.8.8.8';
-    console.log(`[Location API] Detected IP: ${ip}`);
-    const url = `https://ipinfo.io/${ip}/json`;
-
-    https.get(url, (apiRes) => {
-        let data = '';
-        apiRes.on('data', (chunk) => {
-            data += chunk;
-        });
-        apiRes.on('end', () => {
-            try {
-                const jsonData = JSON.parse(data);
-                console.log('[Location API] Response from ipinfo.io:', jsonData);
-                if (jsonData.loc) {
-                    const [lat, lon] = jsonData.loc.split(',');
-                    res.json({ lat: parseFloat(lat), lon: parseFloat(lon) });
-                } else {
-                    res.status(404).json({ error: 'Location not found' });
-                }
-            } catch (e) {
-                console.error('[Location API] Error parsing JSON:', e);
-                res.status(500).json({ error: 'Failed to parse location data' });
-            }
-        });
-    }).on('error', (err) => {
-        console.error('[Location API] Error fetching location:', err);
-        res.status(500).json({ error: 'Failed to fetch location' });
-    });
-});
 
 app.use(express.static(__dirname));
 

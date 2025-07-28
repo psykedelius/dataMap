@@ -1,16 +1,18 @@
 // Initialisation de la carte
 var map = L.map('map');
 
-// Centrer la carte sur la position IP de l'utilisateur
-fetch('/api/location')
-    .then(res => res.json())
-    .then(data => {
-        map.setView([data.lat, data.lon], 13);
-    })
-    .catch(() => {
-        // Fallback sur Paris en cas d'erreur
+// Centrer la carte sur la position de l'utilisateur
+if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition(position => {
+        map.setView([position.coords.latitude, position.coords.longitude], 13);
+    }, () => {
+        // Fallback sur Paris si l'utilisateur refuse la géolocalisation
         map.setView([48.8566, 2.3522], 13);
     });
+} else {
+    // Fallback sur Paris si le navigateur ne supporte pas la géolocalisation
+    map.setView([48.8566, 2.3522], 13);
+}
 
 // Ajout du fond de carte OpenStreetMap
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

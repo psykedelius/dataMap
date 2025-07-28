@@ -118,6 +118,21 @@ const authenticateJWT = (req, res, next) => {
     }
 };
 
+// Route pour récupérer le rôle d'un utilisateur
+app.get('/api/user/role', authenticateJWT, (req, res) => {
+    const sql = "SELECT role FROM users WHERE id = ?";
+    db.get(sql, [req.user.id], (err, row) => {
+        if (err) {
+            res.status(400).json({"error":err.message});
+            return;
+        }
+        res.json({
+            "message":"success",
+            "data":row
+        })
+    });
+});
+
 // Route pour récupérer les entreprises d'un utilisateur
 app.get('/api/user/businesses', authenticateJWT, (req, res) => {
     const sql = "SELECT * FROM businesses WHERE user_id = ?";

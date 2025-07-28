@@ -58,6 +58,15 @@ db.run(`CREATE TABLE IF NOT EXISTS time_slots (
     FOREIGN KEY (business_id) REFERENCES businesses (id) ON DELETE CASCADE
 )`);
 
+// Création de la table des réservations
+db.run(`CREATE TABLE IF NOT EXISTS reservations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    time_slot_id INTEGER NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (time_slot_id) REFERENCES time_slots (id)
+)`);
+
 // Route d'inscription
 app.post('/api/signup', (req, res) => {
     console.log('Received signup request:', req.body);
@@ -129,6 +138,27 @@ app.get('/api/user/role', authenticateJWT, (req, res) => {
         res.json({
             "message":"success",
             "data":row
+        })
+    });
+});
+
+// Route pour récupérer les réservations d'un utilisateur
+app.get('/api/user/reservations', authenticateJWT, (req, res) => {
+    const sql = `
+        SELECT b.name as business_name, ts.day_of_week, ts.start_time
+        FROM reservations r
+        JOIN time_slots ts ON r.time_slot_id = ts.id
+        JOIN businesses b ON ts.business_id = b.id
+        WHERE r.user_id = ?
+    `;
+    db.all(sql, [req.user.id], (err, rows) => {
+        if (err) {
+            res.status(400).json({"error":err.message});
+            return;
+        }
+        res.json({
+            "message":"success",
+            "data":rows
         })
     });
 });

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon profil</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Mon profil</h1>
+        <div class="user-actions">
+            <a href="index.html">Accueil</a>
+            <a href="#" id="logout">Se déconnecter</a>
+        </div>
+    </header>
+    <main>
+        <h2>Mes informations</h2>
+        <form id="profile-form">
+            <label for="name">Nom:</label><br>
+            <input type="text" id="name" name="name" required><br>
+            <label for="username">Pseudo:</label><br>
+            <input type="text" id="username" name="username" required><br>
+            <label for="phone">Téléphone:</label><br>
+            <input type="tel" id="phone" name="phone"><br>
+            <input type="submit" value="Mettre à jour">
+        </form>
+        <hr>
+        <h2>Mes réservations</h2>
+        <div id="calendar"></div>
+    </main>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: function(fetchInfo, successCallback, failureCallback) {
+                    fetch('/api/user/reservations', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        const events = data.data.map(reservation => {
+                            return {
+                                title: reservation.business_name,
+                                start: getNextDayOfWeek(new Date(), reservation.day_of_week).toISOString().split('T')[0] + 'T' + reservation.start_time
+                            };
+                        });
+                        successCallback(events);
+                    })
+                    .catch(err => failureCallback(err));
+                }
+            });
+            calendar.render();
+        });
+
+        function getNextDayOfWeek(date, dayOfWeek) {
+            const resultDate = new Date(date.getTime());
+            resultDate.setDate(date.getDate() + (7 + dayOfWeek - date.getDay()) % 7);
+            return resultDate;
+        }
+
+        document.getElementById('logout').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>

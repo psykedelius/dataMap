@@ -3,33 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscription - Espace Professionnel</title>
+    <title>S'inscrire</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <header>
-        <h1>Inscription - Espace Professionnel</h1>
+        <h1>S'inscrire</h1>
     </header>
     <main>
-        <p><a href="index.html">Accueil</a> > <a href="pro.html">Espace Professionnel</a> > Inscription</p>
-        <form>
+        <p><a href="index.html">Accueil</a> > S'inscrire</p>
+        <form id="signup-form">
+            <label for="name">Nom:</label><br>
+            <input type="text" id="name" name="name" required><br>
+            <label for="username">Pseudo:</label><br>
+            <input type="text" id="username" name="username" required><br>
+            <label for="phone">Téléphone:</label><br>
+            <input type="tel" id="phone" name="phone"><br>
             <label for="email">Email:</label><br>
-            <input type="email" id="email" name="email"><br>
+            <input type="email" id="email" name="email" required><br>
             <label for="password">Mot de passe:</label><br>
-            <input type="password" id="password" name="password"><br>
+            <input type="password" id="password" name="password" required><br>
             <label for="password-confirm">Confirmer le mot de passe:</label><br>
-            <input type="password" id="password-confirm" name="password-confirm"><br><br>
+            <input type="password" id="password-confirm" name="password-confirm" required><br><br>
             <input type="submit" value="S'inscrire">
         </form>
     </main>
     <script>
-        const form = document.querySelector('form');
-        form.addEventListener('submit', (e) => {
-            console.log('Form submitted');
+        const signupForm = document.getElementById('signup-form');
+        signupForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const email = form.email.value;
-            const password = form.password.value;
-            const passwordConfirm = form['password-confirm'].value;
+            const name = signupForm.name.value;
+            const username = signupForm.username.value;
+            const phone = signupForm.phone.value;
+            const email = signupForm.email.value;
+            const password = signupForm.password.value;
+            const passwordConfirm = signupForm['password-confirm'].value;
 
             if (password !== passwordConfirm) {
                 alert('Les mots de passe ne correspondent pas.');
@@ -41,14 +49,14 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({ name, username, phone, email, password })
             })
             .then(res => res.json())
             .then(data => {
                 if (data.error) {
                     alert(data.error);
                 } else {
-                    alert('Inscription réussie !');
+                    alert('Inscription réussie ! Vous pouvez maintenant vous connecter.');
                     window.location.href = 'login.html';
                 }
             });

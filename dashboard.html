@@ -50,7 +50,7 @@
                     <input type="hidden" id="lng" name="lng" required>
                     <p>Cliquez sur la carte pour définir l'emplacement.</p>
                     <br>
-                    <input type="submit" value="Créer la fiche">
+                    <input type="submit" value="Créer la fiche" id="submit-button" disabled>
                 </form>
             </div>
             <div id="coord-map"></div>
@@ -157,6 +157,22 @@
         });
 
         const businessForm = document.getElementById('business-form');
+        const submitButton = document.getElementById('submit-button');
+        const nameInput = document.getElementById('name');
+        const latInput = document.getElementById('lat');
+
+        function checkForm() {
+            const name = nameInput.value;
+            const lat = latInput.value;
+            if (name && lat) {
+                submitButton.disabled = false;
+            } else {
+                submitButton.disabled = true;
+            }
+        }
+
+        businessForm.addEventListener('input', checkForm);
+
         businessForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const name = businessForm.name.value;

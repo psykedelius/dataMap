@@ -28,7 +28,11 @@ const db = new sqlite3.Database('./db/ludico.db', (err) => {
 db.run(`CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL
+    password TEXT NOT NULL,
+    name TEXT,
+    username TEXT,
+    phone TEXT,
+    role TEXT
 )`);
 
 // Création de la table des entreprises
@@ -58,13 +62,17 @@ db.run(`CREATE TABLE IF NOT EXISTS time_slots (
 app.post('/api/signup', (req, res) => {
     console.log('Received signup request:', req.body);
     try {
-        const { email, password } = req.body;
-        const sql = 'INSERT INTO users (email, password) VALUES (?, ?)';
+        const { name, username, phone, email, password, role } = req.body;
+        const sql = 'INSERT INTO users (name, username, phone, email, password, role) VALUES (?, ?, ?, ?, ?, ?)';
 
-        db.run(sql, [email, password], function(err) {
+        db.run(sql, [name, username, phone, email, password, role], function(err) {
             if (err) {
-                console.error('Database INSERT error:', err.message);
-                res.status(400).json({ "error": err.message });
+                if (err.message.includes('UNIQUE constraint failed')) {
+                    res.status(400).json({ "error": "Cette adresse e-mail est déjà utilisée." });
+                } else {
+                    console.error('Database INSERT error:', err.message);
+                    res.status(400).json({ "error": err.message });
+                }
                 return;
             }
             console.log(`A row has been inserted with rowid ${this.lastID}`);
@@ -82,11 +90,11 @@ app.post('/api/login', (req, res) => {
     const sql = 'SELECT * FROM users WHERE email = ? AND password = ?';
     db.get(sql, [email, password], (err, row) => {
         if (err || !row) {
-            res.status(400).json({ "error": "Invalid credentials" });
+            res.status(400).json({ "error": "Email ou mot de passe incorrect." });
             return;
         }
-        const token = jwt.sign({ id: row.id }, JWT_SECRET, { expiresIn: '1h' });
-        res.json({ "message": "success", "token": token });
+        const token = jwt.sign({ id: row.id, role: row.role }, JWT_SECRET, { expiresIn: '1h' });
+        res.json({ "message": "success", "token": token, "role": row.role });
     });
 });
 

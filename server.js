@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const sqlite3 = require('sqlite3').verbose();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = 3000;
 const JWT_SECRET = 'votre_secret_jwt'; // Changez ceci pour une chaîne secrète plus complexe
 
 app.use(bodyParser.json());

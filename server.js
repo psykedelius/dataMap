@@ -31,7 +31,8 @@ db.run(`CREATE TABLE IF NOT EXISTS users (
     password TEXT NOT NULL,
     name TEXT,
     username TEXT,
-    phone TEXT
+    phone TEXT,
+    role TEXT
 )`);
 
 // Création de la table des entreprises
@@ -75,8 +76,12 @@ app.post('/api/signup', (req, res) => {
 
         db.run(sql, [name, username, phone, email, password, role], function(err) {
             if (err) {
-                console.error('Database INSERT error:', err.message);
-                res.status(400).json({ "error": err.message });
+                if (err.message.includes('UNIQUE constraint failed')) {
+                    res.status(400).json({ "error": "Cette adresse e-mail est déjà utilisée." });
+                } else {
+                    console.error('Database INSERT error:', err.message);
+                    res.status(400).json({ "error": err.message });
+                }
                 return;
             }
             console.log(`A row has been inserted with rowid ${this.lastID}`);
@@ -94,7 +99,7 @@ app.post('/api/login', (req, res) => {
     const sql = 'SELECT * FROM users WHERE email = ? AND password = ?';
     db.get(sql, [email, password], (err, row) => {
         if (err || !row) {
-            res.status(400).json({ "error": "Invalid credentials" });
+            res.status(400).json({ "error": "Email ou mot de passe incorrect." });
             return;
         }
         const token = jwt.sign({ id: row.id, role: row.role }, JWT_SECRET, { expiresIn: '1h' });

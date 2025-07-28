@@ -19,9 +19,11 @@
             <input type="password" id="password" name="password"><br><br>
             <input type="submit" value="Se connecter">
         </form>
+        <div id="error-message" style="color: red;"></div>
     </main>
     <script>
         const form = document.querySelector('form');
+        const errorMessage = document.getElementById('error-message');
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             const email = form.email.value;
@@ -37,7 +39,7 @@
             .then(res => res.json())
             .then(data => {
                 if (data.error) {
-                    alert(data.error);
+                    errorMessage.textContent = data.error;
                 } else {
                     localStorage.setItem('token', data.token);
                     if (data.role === 'professional') {

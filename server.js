@@ -70,10 +70,10 @@ db.run(`CREATE TABLE IF NOT EXISTS reservations (
 app.post('/api/signup', (req, res) => {
     console.log('Received signup request:', req.body);
     try {
-        const { name, username, phone, email, password } = req.body;
-        const sql = 'INSERT INTO users (name, username, phone, email, password) VALUES (?, ?, ?, ?, ?)';
+        const { name, username, phone, email, password, role } = req.body;
+        const sql = 'INSERT INTO users (name, username, phone, email, password, role) VALUES (?, ?, ?, ?, ?, ?)';
 
-        db.run(sql, [name, username, phone, email, password], function(err) {
+        db.run(sql, [name, username, phone, email, password, role], function(err) {
             if (err) {
                 console.error('Database INSERT error:', err.message);
                 res.status(400).json({ "error": err.message });
@@ -97,8 +97,8 @@ app.post('/api/login', (req, res) => {
             res.status(400).json({ "error": "Invalid credentials" });
             return;
         }
-        const token = jwt.sign({ id: row.id }, JWT_SECRET, { expiresIn: '1h' });
-        res.json({ "message": "success", "token": token });
+        const token = jwt.sign({ id: row.id, role: row.role }, JWT_SECRET, { expiresIn: '1h' });
+        res.json({ "message": "success", "token": token, "role": row.role });
     });
 });
 

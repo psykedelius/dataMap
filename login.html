@@ -40,8 +40,11 @@
                     alert(data.error);
                 } else {
                     localStorage.setItem('token', data.token);
-                    alert('Connexion réussie !');
-                    window.location.href = 'dashboard.html';
+                    if (data.role === 'professional') {
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        window.location.href = 'profile.html';
+                    }
                 }
             });
         });

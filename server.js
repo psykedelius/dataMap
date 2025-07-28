@@ -294,7 +294,7 @@ app.get('/api/location', (req, res) => {
     // Correct IP address detection for Heroku and local
     const ip = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || '').split(',')[0].trim() || '8.8.8.8';
     console.log(`[Location API] Detected IP: ${ip}`);
-    const url = `https://ip-api.com/json/${ip}`;
+    const url = `https://ipinfo.io/${ip}/json`;
 
     https.get(url, (apiRes) => {
         let data = '';
@@ -304,9 +304,10 @@ app.get('/api/location', (req, res) => {
         apiRes.on('end', () => {
             try {
                 const jsonData = JSON.parse(data);
-                console.log('[Location API] Response from ip-api.com:', jsonData);
-                if (jsonData.status === 'success') {
-                    res.json({ lat: jsonData.lat, lon: jsonData.lon });
+                console.log('[Location API] Response from ipinfo.io:', jsonData);
+                if (jsonData.loc) {
+                    const [lat, lon] = jsonData.loc.split(',');
+                    res.json({ lat: parseFloat(lat), lon: parseFloat(lon) });
                 } else {
                     res.status(404).json({ error: 'Location not found' });
                 }

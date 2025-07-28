@@ -288,13 +288,14 @@ app.get('/api/businesses', (req, res) => {
       });
 });
 
-const http = require('http');
+const https = require('https');
 
 app.get('/api/location', (req, res) => {
-    const ip = req.ip === '::1' ? '8.8.8.8' : req.ip;
-    const url = `http://ip-api.com/json/${ip}`;
+    // Correct IP address detection for Heroku and local
+    const ip = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || '').split(',')[0].trim() || '8.8.8.8';
+    const url = `https://ip-api.com/json/${ip}`;
 
-    http.get(url, (apiRes) => {
+    https.get(url, (apiRes) => {
         let data = '';
         apiRes.on('data', (chunk) => {
             data += chunk;

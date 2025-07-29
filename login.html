@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion - Espace Professionnel</title>
+    <title>Connexion</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <header>
-        <h1>Connexion - Espace Professionnel</h1>
+        <h1>Connexion</h1>
     </header>
     <main>
-        <p><a href="index.html">Accueil</a> > <a href="pro.html">Espace Professionnel</a> > Connexion</p>
+        <p><a href="index.html">Accueil</a> > Connexion</p>
         <form>
             <label for="email">Email:</label><br>
             <input type="email" id="email" name="email"><br>
@@ -19,9 +19,11 @@
             <input type="password" id="password" name="password"><br><br>
             <input type="submit" value="Se connecter">
         </form>
+        <div id="error-message" style="color: red;"></div>
     </main>
     <script>
         const form = document.querySelector('form');
+        const errorMessage = document.getElementById('error-message');
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             const email = form.email.value;
@@ -37,11 +39,14 @@
             .then(res => res.json())
             .then(data => {
                 if (data.error) {
-                    alert(data.error);
+                    errorMessage.textContent = data.error;
                 } else {
                     localStorage.setItem('token', data.token);
-                    alert('Connexion réussie !');
-                    window.location.href = 'dashboard.html';
+                    if (data.role === 'professional') {
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        window.location.href = 'profile.html';
+                    }
                 }
             });
         });

@@ -35,7 +35,7 @@
         <div id="error-message" style="color: red;"></div>
     </main>
     <script>
-        const signupForm = document.getElementById('signup-form');
+        const signupForm   = document.getElementById('signup-form');
         const errorMessage = document.getElementById('error-message');
         signupForm.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -45,6 +45,7 @@
             const email = signupForm.email.value;
             const password = signupForm.password.value;
             const passwordConfirm = signupForm['password-confirm'].value;
+            const role = signupForm.role.value;
 
             if (password !== passwordConfirm) {
                 alert('Les mots de passe ne correspondent pas.');
@@ -56,7 +57,7 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ name, username, phone, email, password })
+                body: JSON.stringify({ name, username, phone, email, password, role })
             })
             .then(res => res.json())
             .then(data => {

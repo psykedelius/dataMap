@@ -42,6 +42,8 @@
                     errorMessage.textContent = data.error;
                 } else {
                     localStorage.setItem('token', data.token);
+                    console.log('Connexion réussie: Connected as ', data.role);
+
                     if (data.role === 'professional') {
                         window.location.href = 'dashboard.html';
                     } else {
